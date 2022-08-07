@@ -1,0 +1,106 @@
+USE [Tr_851-1]
+GO
+INSERT INTO Locations
+           (Country, Region, City, [Address], Phone, LocationID)
+     VALUES
+           ('Беларусь','Витебская','Полоцк','ул.Лесная, 6',	'+375172691376',101)
+INSERT INTO Locations
+       VALUES
+           (110,'Беларусь','Минская','Ганцевичи','ул.Ленина, 45',	'+375445678907')
+-------------------------------
+SELECT * FROM Locations
+-------------------------------
+INSERT INTO Locations
+           (LocationID, Region, City, [Address])
+     VALUES
+           (103,'','Минск','ул.Маркса, 24')
+
+INSERT INTO Locations
+           ([Address], City, LocationID, Region)
+     VALUES
+           ('ул.Моховая, 12', 'Лида', 102, 'Гродненская')
+
+INSERT INTO Locations
+       VALUES
+     (301,	'Украина','', 'Киев', 'ул. Крещатик, 14', NULL, NULL),
+	 (302,	'Украина','Львовская','Моршин','ул.Франко, 24', NULL, NULL)
+INSERT INTO Locations
+           (LocationID, Region, City, [Address])
+     VALUES
+           (155,'','Минск','ул.Московская, 15а - 57')
+INSERT INTO Locations
+       VALUES
+           (156,'YYY','','Минск','ул.Московская, 15а - 58', NULL)	           	
+------------------------------------
+SELECT * FROM Clients
+------------------------------------------
+INSERT Clients (ClientName, HeadFullName, Location) 
+	VALUES ('ГП "Верас"', 'Прокушев Станислав Игоревич', 102)
+----------------------------	
+SELECT * FROM Locations
+----------------------------	
+INSERT Clients 
+VALUES 
+	('ИП "Темп"', 'Васько Григорий Терентьевич', 101),
+	('УП "Вера"', 'Прокуш Станислав Игоревич', 102),
+    ('ИП "Темпера"', 'Вась Григорий Терентьевич', 301)
+INSERT [dbo].[Clients] ([ClientName], [HeadFullName]) 
+VALUES ('ОАО "Старт"', 'Кулагин Василий Петрович')
+INSERT [dbo].[Clients] ( [ClientName], [HeadFullName], [Location]) 
+VALUES ('ОАО "Рога и копыта"', 'Бендер Остап', 301)
+INSERT [dbo].[Clients] ( [ClientName], [HeadFullName], [Location]) 
+VALUES ('ОАО "IT Teaching"', 'Белый Александр Александрович', 155)
+-----------------------------
+SELECT * FROM Currencies
+-----------------------------
+INSERT INTO Currencies VALUES 
+--('BYN', 'Бел. руб.', 1.00),
+--('USD', 'Доллар', 2.1011),
+('EUR', 'Евро', 2.42),
+('GRV', 'Гривня', 0.07)
+-------------------------
+SELECT * FROM Products
+--DELETE FROM Products WHERE ProductName like 'Milk%'
+-------------------------
+SET IDENTITY_INSERT Products OFF
+--INSERT [dbo].[Products] ([ProductID], [ProductName], [Price], [Currency]) 
+	--VALUES (111, 'Монитор 24"', 113.0500, 'USD')
+INSERT [dbo].[Products] ([ProductID], [ProductName],[Price], [Currency]) 
+VALUES (333, 'Кабель', 2.5000, 'EUR')
+INSERT [dbo].[Products] ([ProductID], [ProductName],  [Price], [Currency]) 
+VALUES (444, 'Винчестер HDD 4 ТB', 299.9000, 'BYN')
+INSERT [dbo].[Products] ([ProductID], [ProductName],  [Price], [Currency]) 
+VALUES (555, 'Компьютер',  999.0000, 'USD')
+INSERT [dbo].[Products] ([ProductID], [ProductName], [Price], [Currency]) 
+VALUES (666, 'Планшет',  120.0000, 'USD')
+INSERT [dbo].[Products]  
+VALUES (777, 'Винчестер HDD 1100GB',  119.9900, 'USD')
+------------------------------
+SELECT * FROM Orders
+-------------------------------
+INSERT Orders ([Client], [Product], [Quantity], [OrderDate], [DeliveryDate]) 
+	VALUES (1, 111, 14, '2021-04-12', '2021-05-03')
+INSERT [dbo].[Orders] 
+	VALUES (2, 444, 27, '19.05.2019','2021-05-25')
+INSERT [dbo].[Orders] 
+VALUES (3, 666, 58.000, '17/05/2021', '2021-05-03')
+INSERT [dbo].[Orders] 
+VALUES (2, 111, 122.000, '2021-04-04', '2021-05-03')
+------ Установка явного задания значения автоинкрементного столбца
+SET IDENTITY_INSERT [dbo].[Orders] ON
+INSERT [dbo].[Orders] ([OrderID], [Client], [Product], [Quantity], [OrderDate], [DeliveryDate]) 
+	VALUES (888, 4, 444, 25.000, '2021-04-04', '2021-05-10')
+-- Отмена задания явного значения автоинкрементного столбца 	
+SET IDENTITY_INSERT [dbo].[Orders] OFF
+INSERT [dbo].[Orders] 
+VALUES (3, 111, 37.000, CAST('2020-04-24' AS Date), CAST(N'2020-05-10' AS Date))
+INSERT [dbo].[Orders] 
+VALUES (2, 111, CAST(10.000 AS Numeric(12, 3)), CAST(N'2020-09-06' AS Date), CAST(N'2020-09-25' AS Date))
+INSERT [dbo].[Orders] 
+VALUES (6, 777, CAST(25.000 AS Numeric(12, 3)), CAST(N'2020-05-30' AS Date), CAST(N'2020-05-15' AS Date))
+INSERT [dbo].[Orders] 
+VALUES (2, 111, CAST(80.000 AS Numeric(12, 3)), CAST(N'2020-04-04' AS Date), CAST(N'2020-04-14' AS Date))
+GO
+SELECT * FROM Orders
+GO
+
