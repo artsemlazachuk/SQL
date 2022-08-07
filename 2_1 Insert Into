@@ -1,0 +1,112 @@
+INSERT INTO Positions
+ (PositionID, PositionName, Salary, Responsibilities)
+ VALEUS
+ (101,'Менеджер по продаж.','1000','Осущ. сделок, проведен. переговоров')
+ INSERT INTO Positions
+ (PositionID, PositionName, Salary, Responsibilities)
+ VALUES
+ (102,'Куратор склада авто','1100','Оценка авто, заключение договоров')
+ INSERT INTO Positions
+ (PositionID, PositionName, Salary, Reponsibilities)
+ VALUES
+ (103, 'Менеджер по раб. с клиентами', '1300', 'Раб. с трафиком, оформлен. док.')
+ INSERT INTO Positions
+  (PositionID, PositionName, Salary, Responsibilities)
+  VALUES
+  (104, 'Администратор', '2100', 'Встреча клиентов', Первичное консультиров. ')
+  
+  
+  INSERT INTO Employees
+(EmployeeID, Name, Age, Sex, PositionID)
+VALUES
+(201,'Г.И.Ванилова','21','Жен','101')
+INSERT INTO Employees
+(EmployeeID, Name, Age, Sex, PositionID)
+VALUES
+(202,'А.О.Вительман','34','Муж', '102')
+INSERT INTO Employees
+(EmployeeID, Name, Age, Sex, PositionID)
+VALUES
+(203, 'И.А.Магуро', '28', 'Жен', '103')
+INSERT INTO Employees
+(EmployeeID, Name, Age, Sex, PositionID)
+VALUES
+(204, 'А.Т.Берело', '30', 'Муж', '104')
+INSERT INTO Employees
+(EmployeeID, Name, Age, Sex, PositionID)
+VALUES
+(205, 'И.А.Альба', '38', 'Жен', '103')
+INSERT INTO Employees
+(EmployeeID, Name, Age, Sex, PositionID)
+VALUES
+(206, 'А.Т.Грего', '30', 'Муж', '104')
+
+
+
+INSERT INTO Sales
+VALUES
+(401,'201','10000','фольксваген_пассат6')
+INSERT INTO Sales
+VALUES
+(402,'202','15900','ауди_а5')
+INSERT INTO Sales
+VALUES
+(403, '203', '8000', 'форд_фокус')
+INSERT INTO Sales
+VALUES
+(404,'204','7500','форд_фиеста')
+
+INSERT INTO Customers
+VALUES
+(501,'А.О.Трезубец','375448985665','2020.10.25','2020.10.26','1000')
+INSERT INTO Customers
+VALUES
+(502,'И.ОВольт','375448985665','2020.10.27','2020.10.28','300')
+INSERT INTO Customers
+VALUES
+(503, 'Г.В.Потресков', '375448912345','2020.10.15','2020.10.16','400')
+INSERT INTO Customers
+VALUES
+(504,'И.В.Позноров','37529398343','2020.10.21','2020.10.23','600')
+
+
+INSERT INTO Automobiles
+VALUES
+(401,'фольксваген_пассат6','601','134523','10000','501','901')
+INSERT INTO Automobiles
+VALUES
+(402,'ауди_а5','602','184628','15900','502','902')
+INSERT INTO Automobiles
+VALUES
+(403, 'форд_фокус','603','114573','8000','503','903')
+INSERT INTO Automobiles
+VALUES
+(404,'форд_фиеста','604','134899','7500','504','904')
+
+
+INSERT INTO Manufacturers
+VALUES
+(601,'фольксваген_концерн','Германия','г.Ингольштад')
+INSERT INTO Manufacturers
+VALUES
+(602,'ауди_мобайл','Нидерланды','г.Эйндховен')
+INSERT INTO Manufacturers
+VALUES
+(603, 'форд_продакшион','Испания','г.Мадрид')
+INSERT INTO Manufacturers
+VALUES
+(604,'форд_концерн','США','ш.Флорида')
+
+INSERT INTO AdditionalComplictation
+VALUES
+(901,'доп_выхлоп_труба','150')
+INSERT INTO AdditionalComplictation
+VALUES
+(902,'спойлер','300')
+INSERT INTO AdditionalComplictation
+VALUES
+(903, 'диски','230')
+INSERT INTO AdditionalComplictation
+VALUES
+(904,'шины','210')
+
