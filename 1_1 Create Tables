@@ -38,7 +38,7 @@ CREATE TABLE [dbo].[Customers] (
  [PrePayment] [money] NOT NULL,
 CONSTRAINT [PK_Customers] PRIMARY KEY CLUSTERED
 
-CREATE TABLE  [dbo].[Customers] [Employess](
+CREATE TABLE  [dbo].[Employess](
   [EmployeeID] [char](3) NOT NULL,
   [Name] [varchar](30) NULL,
   [Age] [char](3) NOT NULL,
