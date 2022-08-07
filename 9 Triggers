@@ -1,0 +1,180 @@
+--07.05.2021
+USE [Tr_851-1]
+GO
+CREATE TRIGGER MyTrigger
+ON Currencies
+FOR UPDATE
+AS
+BEGIN
+	SELECT 'Hello'
+END
+GO
+SELECT * FROM Currencies
+UPDATE Currencies SET Rate = 3.07
+WHERE CurrencyID = 'EUR'
+GO
+---
+ALTER TRIGGER MyTrigger
+ON Currencies
+FOR UPDATE
+AS
+BEGIN
+	SELECT * FROM deleted
+	SELECT * FROM inserted
+END
+GO
+UPDATE Currencies SET Rate += 0.01
+GO
+---
+ALTER TRIGGER MyTrigger
+ON Currencies
+FOR UPDATE, INSERT, DELETE
+AS
+BEGIN
+	SELECT * FROM deleted
+	SELECT * FROM inserted
+END
+GO
+---
+SELECT * FROM Currencies
+INSERT INTO Currencies
+	VALUES ('XXX', 'XXX XXX', 50);
+DELETE FROM Currencies
+ WHERE CurrencyID = 'XXX';
+---
+DROP TRIGGER MyTrigger
+GO
+---
+SELECT * FROM Products
+---
+SELECT ProductID, Price FROM Products
+WHERE ProductID IN (111, 555);
+---
+SET XACT_ABORT ON
+BEGIN TRAN
+UPDATE Products SET Price -= 1
+WHERE ProductID = 111
+UPDATE Products SET Price += 1/0
+WHERE ProductID = 555
+COMMIT TRAN
+---
+BEGIN TRAN;	-- старт транзакции
+UPDATE Currencies			-- обновление данных
+	SET Rate = Rate * 2;
+SELECT * FROM Currencies;	-- просмотр измененных данных
+ROLLBACK TRAN;			-- откат транзакции
+SELECT * FROM Currencies;	-- снова просмотр исходных данных
+GO
+---
+CREATE TRIGGER NoModify_OrderDate
+ON Orders
+	FOR UPDATE 
+		AS
+			IF UPDATE(OrderDate)
+BEGIN
+	PRINT 'Обновление столбца OrderDate запрещено'
+	ROLLBACK TRAN	-- откат транзакции
+END
+GO
+UPDATE Orders SET OrderDate = DateAdd(d, 1, OrderDate)
+------
+--Создадим триггер для таблицы Products, срабатывающий при любом изменении 
+--цены товара и 
+--корректирующий в таблице Orders значения полей Cost и CostBYN 
+--в тех строках, 
+--которые соответствуют товару с изменившейся ценой
+-----
+SELECT * FROM Orders
+ALTER TABLE Orders DROP COLUMN Cost
+ALTER TABLE Orders DROP COLUMN CostBYN
+---
+ALTER TABLE Orders ADD Cost MONEY NULL
+ALTER TABLE Orders ADD CostBYN MONEY NULL
+GO
+---
+CREATE TRIGGER ProductPrice 
+ON Products 
+	FOR UPDATE AS 
+IF UPDATE(Price)
+	BEGIN
+		DECLARE @ProductCode INT, @Price MONEY, @PriceBYN MONEY;
+---
+		SELECT @ProductCode = inserted.ProductID,
+			@Price = inserted.Price, 
+			@PriceBYN = inserted.Price * Currencies.Rate
+				FROM inserted INNER JOIN Currencies
+					ON inserted.Currency = Currencies.CurrencyID;
+---
+		UPDATE Orders
+			SET Cost = Quantity * @Price,
+				CostBYN = Quantity * @PriceBYN 
+					WHERE Product = @ProductCode 	
+	END
+GO
+---
+SELECT * FROM Orders ORDER BY Product
+SELECT * FROM Products WHERE ProductID = 111
+UPDATE Products
+	SET Price = Price * 1.05 
+		WHERE ProductID = 111
+SELECT * FROM Products WHERE ProductID = 111
+SELECT * FROM Orders ORDER BY Product
+GO
+---
+SELECT * FROM Orders ORDER BY Product
+SELECT * FROM Products WHERE ProductID = 666
+UPDATE Products
+	SET Price = Price * 1.05 
+		WHERE ProductID = 666
+SELECT * FROM Products WHERE ProductID = 666
+SELECT * FROM Orders ORDER BY Product
+GO
+---
+SELECT * FROM Orders ORDER BY Product
+SELECT * FROM Products WHERE ProductID IN (111, 666)
+UPDATE Products
+	SET Price = Price * 0.95 
+		WHERE ProductID IN (111, 666)
+SELECT * FROM Products WHERE ProductID IN (111, 666)
+SELECT * FROM Orders ORDER BY Product
+GO
+-----------------------------
+--Однако данный триггер обладает тем недостатком, 
+--что отслеживает изменение цены лишь одного товара, 
+--даже если были одновременно изменены цены сразу у нескольких товаров. 
+--Убедимся в этом, изменив цену для нескольких товаров
+--------------------------
+ALTER TRIGGER ProductPrice
+ON Products 
+FOR UPDATE AS 
+	IF UPDATE(Price)
+BEGIN
+DECLARE @ProductCode INT, @Price MONEY, @PriceBYN MONEY
+
+DECLARE myCursor CURSOR LOCAL STATIC FOR
+	SELECT inserted.ProductID, inserted.Price, 
+		inserted.Price * Currencies.Rate
+		FROM inserted INNER JOIN Currencies
+			ON inserted.Currency = Currencies.CurrencyID
+OPEN myCursor
+FETCH FIRST FROM myCursor INTO @ProductCode, @Price, @PriceBYN
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	UPDATE Orders
+	SET Cost = Quantity * @Price,
+		CostBYN = Quantity * @PriceBYN 
+			WHERE Product = @ProductCode
+	FETCH NEXT FROM myCursor INTO @ProductCode, @Price, @PriceBYN
+END
+CLOSE myCursor
+DEALLOCATE myCursor 
+END
+GO
+---
+SELECT * FROM Orders ORDER BY Product
+SELECT * FROM Products 
+UPDATE Products
+	SET Price = Price * 0.80 
+SELECT * FROM Products 
+SELECT * FROM Orders ORDER BY Product
+GO
