@@ -1,0 +1,260 @@
+USE [Tr_851-1]
+GO
+------------------------------------------
+--Функция типа Multi-statement Table-valued, 
+--возвращающая таблицу с новым столбцом RegionalCenter, 
+--в котором определяется является ли город областным центром. 
+--По правилам заполнения таблицы Locations,
+--если город является областным центром 
+--у него в поле Region находится пустая строка.
+---------------------------------------------
+SELECT * FROM Locations
+GO
+DROP FUNCTION dbo.RegionalCenters
+GO 
+CREATE FUNCTION RegionalCenters
+	(@Country VARCHAR(20))
+RETURNS @CountryRegions TABLE (
+	LocationID 		INT PRIMARY KEY,
+	Country 		VARCHAR(20) NOT NULL,
+	City			VARCHAR(20) NULL,
+	RegionalCenter	BIT NULL
+)
+BEGIN
+DECLARE @rowset TABLE (
+		LocationID 		INT PRIMARY KEY,
+		Country 		VARCHAR(20) NOT NULL,
+		Region 			VARCHAR(20) NOT NULL,
+		City 			VARCHAR(20) NULL,
+		RegionalCenter 	BIT DEFAULT 0
+);
+
+INSERT INTO @rowset (LocationID, Country, Region, City)
+		SELECT LocationID, Country, Region, City 
+			FROM Locations
+				WHERE Country = @Country;
+UPDATE @rowset SET RegionalCenter = 1 WHERE Region = '';
+
+INSERT INTO @CountryRegions
+		SELECT LocationID, Country, City, RegionalCenter 
+			FROM @rowset;
+RETURN
+END
+GO
+------------------------------------------
+--Проверка работы функции RegionalCenters
+----------------------------------------
+SELECT * FROM dbo.RegionalCenters('Беларусь')
+-- Вывести список городов, котороые НЕ являются областными центрами Беларуси
+SELECT * FROM dbo.RegionalCenters('Беларусь')
+	WHERE RegionalCenter != 1
+---
+SELECT City FROM dbo.RegionalCenters('Беларусь')
+	WHERE RegionalCenter != 1
+---
+SELECT * FROM dbo.RegionalCenters('Украина')
+GO
+---
+SELECT Getdate()
+GO
+DROP FUNCTION dbo.getOnlyDate
+GO 
+CREATE FUNCTION getOnlyDate() 
+	RETURNS DATE
+	BEGIN
+		DECLARE @Date1 DATE = CAST(GETDATE() AS DATE)
+		--CONVERT(DATE, GETDATE(), 103)
+		RETURN @Date1
+	END
+GO
+SELECT dbo.getOnlyDate()
+GO
+---
+--Вывести разницу между ценами товаров
+SELECT ProductName, Price FROM Products
+	ORDER BY Price DESC
+---
+DECLARE MyCursor CURSOR -- 1 SELECT не выполняется
+	FOR 
+	SELECT ProductName, Price
+		FROM Products
+			ORDER BY Price DESC
+OPEN MyCursor --2
+---> --3
+--->
+CLOSE MyCursor --4
+DEALLOCATE MyCursor --5
+---
+DECLARE MyCursor CURSOR --SELECT не выполняется
+	FOR 
+	SELECT ProductName, Price
+	FROM Products
+	ORDER BY Price DESC
+OPEN MyCursor --выполняется SELECT, создается врем таблица на диске
+--> чтобы двигаться по строкам курсора команда FETCH
+FETCH NEXT FROM MyCursor -- выбрасывает данные на экран
+FETCH NEXT FROM MyCursor
+FETCH NEXT FROM MyCursor
+-->
+CLOSE MyCursor --освободить память
+DEALLOCATE MyCursor	--не существует объект 	MyCursor
+---
+DECLARE MyCursor CURSOR 
+	FOR 
+	SELECT ProductName, Price
+	FROM Products
+	ORDER BY Price DESC
+OPEN MyCursor
+FETCH NEXT FROM MyCursor
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+--> действия со строками курсора
+-->
+	  FETCH NEXT FROM MyCursor
+	END
+CLOSE MyCursor 
+DEALLOCATE MyCursor
+---
+DECLARE MyCursor CURSOR 
+	FOR 
+	SELECT ProductName, Price
+	FROM Products
+	ORDER BY Price DESC
+OPEN MyCursor
+DECLARE @Name varchar(50), @Price money
+FETCH NEXT FROM MyCursor INTO @Name, @Price
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+--> действия со строками курсора
+-->
+	  FETCH NEXT FROM MyCursor INTO @Name, @Price
+	END
+CLOSE MyCursor 
+DEALLOCATE MyCursor
+GO
+---
+DECLARE MyCursor CURSOR 
+	FOR 
+	SELECT ProductName, Price
+	FROM Products
+	ORDER BY Price DESC
+OPEN MyCursor
+DECLARE @Name varchar(50), @Price money, @PrevPrice money
+FETCH NEXT FROM MyCursor INTO @Name, @Price
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+--> действия со строками курсора
+	  SELECT @Name, @Price, @PrevPrice - @Price
+	  SET 	@PrevPrice = @Price
+	  FETCH NEXT FROM MyCursor INTO @Name, @Price
+	END
+CLOSE MyCursor 
+DEALLOCATE MyCursor
+GO
+---
+DECLARE MyCursor CURSOR 
+	FOR 
+	SELECT ProductName, Price
+	FROM Products
+	ORDER BY Price DESC
+OPEN MyCursor
+DECLARE @Name varchar(50), @Price money, @PrevPrice money
+DECLARE @MyTable TABLE (
+						Name varchar(50),
+						Price money,
+						DiffPrice money
+						)
+FETCH NEXT FROM MyCursor INTO @Name, @Price
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+--> действия со строками курсора
+	INSERT 
+	INTO @MyTable (Name, Price, DiffPrice)
+	VALUES (@Name, @Price, @PrevPrice - @Price);
+	SET @PrevPrice = @Price;
+	FETCH NEXT FROM MyCursor INTO @Name, @Price;
+	END
+CLOSE MyCursor 
+DEALLOCATE MyCursor
+SELECT * FROM @MyTable
+GO
+---
+DROP FUNCTION dbo.DiffPrices
+GO
+---
+CREATE FUNCTION DiffPrices()
+RETURNS @MyTable TABLE (
+						Name varchar(50),
+						Price money,
+						DiffPrice money
+						)
+BEGIN
+DECLARE MyCursor CURSOR 
+	FOR 
+	SELECT ProductName, Price
+	FROM Products
+	ORDER BY Price DESC
+OPEN MyCursor
+DECLARE @Name varchar(50), @Price money, @PrevPrice money
+FETCH NEXT FROM MyCursor INTO @Name, @Price
+WHILE @@FETCH_STATUS = 0
+	BEGIN
+	INSERT 
+	INTO @MyTable (Name, Price, DiffPrice)
+	VALUES (@Name, @Price, @PrevPrice - @Price)
+	SET 	@PrevPrice = @Price
+	FETCH NEXT FROM MyCursor INTO @Name, @Price
+	END
+CLOSE MyCursor 
+DEALLOCATE MyCursor
+RETURN
+END
+GO
+---
+SELECT * FROM dbo.DiffPrices()
+--Вывести товар с наибольшей рзницей в цене с предыдущим товаром
+SELECT * FROM dbo.DiffPrices()
+	WHERE DiffPrice = 
+	(SELECT MAX(DiffPrice) FROM dbo.DiffPrices())
+---
+--Подсчитать суммарную выручку по всем заказам в бел руб
+SELECT * FROM OrderCOST
+SELECT SUM(BYNCost) FROM OrderCOST
+---
+DROP FUNCTION dbo.COST_BYN
+GO
+CREATE FUNCTION COST_BYN()
+RETURNS MONEY	 
+AS
+BEGIN
+DECLARE @CostBYN MONEY = 0;
+DECLARE @OrderCost MONEY;
+DECLARE myCursor CURSOR LOCAL STATIC FOR
+	SELECT BYNCost FROM OrderCOST;
+OPEN myCursor;
+FETCH FIRST FROM myCursor INTO @OrderCost
+WHILE @@FETCH_STATUS = 0 
+BEGIN
+	SET @CostBYN += @OrderCost 
+	FETCH NEXT FROM myCursor INTO @OrderCost
+END
+CLOSE myCursor
+DEALLOCATE myCursor
+RETURN @CostBYN
+END
+GO
+---
+SELECT dbo.COST_BYN()
+GO
+CREATE FUNCTION COST_BYN1()
+RETURNS MONEY	 
+AS
+BEGIN
+DECLARE @CostBYN MONEY;
+SELECT @CostBYN = SUM(BYNCost) FROM OrderCOST;
+RETURN @CostBYN
+END
+GO
+---
+SELECT dbo.COST_BYN()
+SELECT dbo.COST_BYN1()
