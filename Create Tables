@@ -1,0 +1,75 @@
+CREATE DATABASE [Auto_salon]
+ CONTAINMENT = NONE
+ ON PRIMARY
+ ( NAME = N 'Auto_salon', FILENAME = N'C:\Program Files (x86)\Microsoft SQL Server\
+ LOG ON
+ ( NAME = N 'Auto_salon_log', FILENAME = N'C:\Program Files (x86)\Microsoft SQL Server\
+ GO
+ 
+ IF (1 = FULLLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+ begin
+ EXEC [Auto_salon].[dbo].[sp_fulltext_database] @action = 'enable'
+ end
+ GO
+
+
+
+
+
+
+
+CREATE TABLE [dbo].[Automobiles] (
+[AutomobileID] [char] (30) NOT NULL,
+[Model] [varchar](50) NULL,
+[ManufacturerID] [char](30) NOT NULL,
+[EngineNumber] [char](30) NOT NULL,
+[Price] [money] NOT NULL,
+[CustomerID] [char](30) NOT NULL,
+[AdditionalComplicationID] [char](30) NOT NULL,
+CONSTRAINT [PK,Automobiles] PRIMARY KEY CLUSTERED
+
+
+CREATE TABLE [dbo].[Customers] (
+ [CustomerID] [char](30) NOT NULL,
+ [Name] [nchar](10) NOT NULL,
+ [PhoneNumber] [nchar](10) NOT NULL,
+ [OrderData] [date] NOT NULL,
+ [SaleData] [date] NOT NULL,
+ [PrePayment] [money] NOT NULL,
+CONSTRAINT [PK_Customers] PRIMARY KEY CLUSTERED
+
+CREATE TABLE  [dbo].[Customers] [Employess](
+  [EmployeeID] [char](3) NOT NULL,
+  [Name] [varchar](30) NULL,
+  [Age] [char](3) NOT NULL,
+  [Sex] [varchar](10) NOT NULL,
+  [PositionID] [char](30) NOT NULL,
+CONSTRAINT [PK_Employees] PRIMARY KEY CLUSTERED
+
+CREATE TABLE [dbo].[Manufacturers](
+  [ManufacturerID] [char](30) NOT NULL,
+  [Name] [ntext] NOT NULL,
+  [Country] [varchar](30) NOT NULL,
+  [Adress] [nchar](10) NOT NULL,
+CONSTRAINT [PK_Manufacturers] PRIMARY KEY CLUSTERED
+
+CREATE TABLE [dbo].[AdditionalComplictation](
+  [AdditionalComplictationID] [char](30) NOT NULL,
+  [Name] [nchar](10) NOT NULL,
+  [Price] [money] NOT NULL,
+CONSTRAINT [PK_Equipment] PRIMARY KEY CLUSTERED
+
+CREATE TABLE [dbo].[Positions](
+ [PositionID] [char](30) NOT NULL,
+ [PositionName] [varchar](30) NULL,
+ [Salary] [money] NOT NULL,
+ [Responsibilities] [varchar] (30) NULL,
+ CONSTRAINT [PK_Positions] PRIMARY KEY CLUSTERED
+ 
+ CREATE TABBLE [dbo].[Sales](
+  [AutomobileID] [char](30) NOT NULL,
+  [EmployeeID] [char](3) NOT NULL,
+  [Price] [money] NOT NULL,
+  [Model] [varchar](50) NULL,
+ CONSTRAINT [PK_Sales] PRIMARY KEY CLUSTERED
+ 
